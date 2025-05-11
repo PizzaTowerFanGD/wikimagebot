@@ -23,13 +23,13 @@ if not image_title:
     print("no suitable image found")
     exit(0)
 
-image_info = requests.get("https://en.wikipedia.org/w/api.php", params={{
+image_info = requests.get("https://en.wikipedia.org/w/api.php", params={
     "action": "query",
     "titles": image_title,
     "prop": "imageinfo",
     "iiprop": "url",
     "format": "json"
-}}).json()
+}).json()
 
 image_url = next(iter(image_info['query']['pages'].values()))['imageinfo'][0]['url']
 
