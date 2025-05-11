@@ -8,7 +8,9 @@ MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 while True:
     # Fetch a random Wikipedia image
 # Define the user-agent
-    headers = {"User-Agent": "wikimagebot/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot)"}
+    headers = {
+    "User-Agent": "wikimagebot/1.0 (+https://github.com/PizzaTowerFanGD/wikimagebot; contact: sprusebenaustinalt@gmail.com; yes i leaked my email to github; no i dont care; -Austin, 2025)"
+}
 
 # Example usage in the first request
     res = requests.get("https://en.wikipedia.org/w/api.php", 
