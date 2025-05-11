@@ -4,13 +4,13 @@ import os
 
 MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 
-res = requests.get("https://en.wikipedia.org/w/api.php", params={{
+res = requests.get("https://en.wikipedia.org/w/api.php", params={
     "action": "query",
     "generator": "random",
     "grnnamespace": 0,
     "prop": "images",
     "format": "json"
-}})
+})
 res.raise_for_status()
 data = res.json()
 
