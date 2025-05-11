@@ -7,14 +7,20 @@ MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 
 while True:
     # Fetch a random Wikipedia image
-    res = requests.get("https://en.wikipedia.org/w/api.php", params={
-        "action": "query",
-        "generator": "random",
-        "grnnamespace": 6,  # Namespace 6 corresponds to files (including images)
-        "prop": "imageinfo",
-        "iiprop": "url",
-        "format": "json"
-    })
+# Define the user-agent
+headers = {"User-Agent": "wikimagebot/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot)"}
+
+# Example usage in the first request
+res = requests.get("https://en.wikipedia.org/w/api.php", 
+                   params={
+                       "action": "query",
+                       "generator": "random",
+                       "grnnamespace": 6,  # Namespace 6 corresponds to files (including images)
+                       "prop": "imageinfo",
+                       "iiprop": "url",
+                       "format": "json"
+                   },
+                   headers=headers)  # Add headers here
     res.raise_for_status()
     data = res.json()
 
