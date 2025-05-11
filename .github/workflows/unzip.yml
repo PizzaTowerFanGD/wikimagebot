@@ -20,9 +20,8 @@ jobs:
       - name: Unzip wiki-image-bot.zip to root
         run: |
           unzip -o wiki-image-bot.zip
-          shopt -s dotglob
-          mv wiki-image-bot/* .
-          rmdir wiki-image-bot
+          rsync -a wiki-image-bot/ .
+          rm -r wiki-image-bot
 
       - name: Commit and push the extracted files
         run: |
