@@ -19,7 +19,7 @@ jobs:
 
       - name: Unzip wiki-image-bot.zip to root
         run: |
-          unzip wiki-image-bot.zip
+          unzip -o wiki-image-bot.zip
           shopt -s dotglob
           mv wiki-image-bot/* .
           rmdir wiki-image-bot
