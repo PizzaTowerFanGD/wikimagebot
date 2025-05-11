@@ -1,0 +1,22 @@
+name: run wiki bot
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run bot
+        env:
+          MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
+        run: python bot.py
