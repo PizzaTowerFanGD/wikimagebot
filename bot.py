@@ -37,8 +37,8 @@ mastodon = Mastodon(
     api_base_url='https://mastodon.social'
 )
 
-media = mastodon.media_post("temp.jpg", sensitive=True)
+media = mastodon.media_post("temp.jpg")
 status = f'Random Wikipedia Image: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
-mastodon.status_post(status=status, media_ids=[media])
+mastodon.status_post(status=status, media_ids=[media], sensitive=true)
 
 print("posted:", status)
