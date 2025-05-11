@@ -39,11 +39,11 @@ with open("temp.jpg", "wb") as f:
 
 mastodon = Mastodon(
     access_token=MASTODON_TOKEN,
-    api_base_url='https://botsin.space'
+    api_base_url='https://mastodon.social'
 )
 
-media = mastodon.media_post("temp.jpg")
-status = f'"{title}"\n{image_url}'
+media = mastodon.media_post("temp.jpg", sensitive=True)
+status = f'"{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
 mastodon.status_post(status=status, media_ids=[media])
 
 print("posted:", status)
