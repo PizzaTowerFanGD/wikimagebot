@@ -17,9 +17,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Unzip the wiki-image-bot.zip
-        run: |
-          unzip wiki-image-bot.zip -d .  # Extract directly to the root of the repo
+      - name: Unzip the wiki-image-bot.zip to root
+          run: |
+           unzip wiki-image-bot.zip
+           shopt -s dotglob  # include hidden files
+           mv wiki-image-bot/* .
+           rmdir wiki-image-bot
 
       - name: Commit and push the extracted files
         run: |
