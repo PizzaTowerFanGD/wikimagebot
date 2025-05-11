@@ -16,7 +16,17 @@ jobs:
           python-version: '3.x'
       - name: Install deps
         run: pip install -r requirements.txt
+      - name: Detect trigger source
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Triggered manually"
+            echo "MANUAL_RUN=true" >> $GITHUB_ENV
+          else
+            echo "Triggered on schedule"
+            echo "MANUAL_RUN=false" >> $GITHUB_ENV
+          fi
       - name: Run bot
         env:
           MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
+          MANUAL_RUN: ${{ env.MANUAL_RUN }}
         run: python bot.py
