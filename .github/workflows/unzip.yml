@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write  # give write access to repository contents
+
 jobs:
   unzip:
     runs-on: ubuntu-latest
@@ -16,12 +19,9 @@ jobs:
 
       - name: Unzip the wiki-image-bot.zip
         run: |
-          mkdir wiki-image-bot
-          unzip wiki-image-bot.zip -d wiki-image-bot
+          unzip wiki-image-bot.zip -d .  # Extract directly to the root of the repo
 
       - name: Commit and push the extracted files
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
