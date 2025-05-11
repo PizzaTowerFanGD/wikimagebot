@@ -20,7 +20,7 @@ while True:
                 "generator": "random",
                 "grnnamespace": 6,
                 "prop": "imageinfo",
-                "iiprop": "url",
+                "iiprop": "url|size",  # request the URL and the image size
                 "format": "json"
             },
             headers=HEADERS
@@ -33,6 +33,8 @@ while True:
         imageinfo = page.get('imageinfo', [])
 
         if imageinfo:
+            # Sort by the largest image size
+            imageinfo = sorted(imageinfo, key=lambda x: x['width'], reverse=True)
             image_url = imageinfo[0]['url']
             if image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')):
                 break
