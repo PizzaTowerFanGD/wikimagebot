@@ -4,8 +4,8 @@ from PIL import Image
 import os
 
 MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
+MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
 
-# proper user-agent per wikipedia policy
 HEADERS = {
     "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot; sprusebenaustinalt@gmail.com)"
 }
@@ -20,7 +20,7 @@ while True:
                 "generator": "random",
                 "grnnamespace": 6,
                 "prop": "imageinfo",
-                "iiprop": "url|size",  # request the URL and the image size
+                "iiprop": "url|size",
                 "format": "json"
             },
             headers=HEADERS
@@ -33,7 +33,6 @@ while True:
         imageinfo = page.get('imageinfo', [])
 
         if imageinfo:
-            # Sort by the largest image size
             imageinfo = sorted(imageinfo, key=lambda x: x['width'], reverse=True)
             image_url = imageinfo[0]['url']
             if image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')):
@@ -78,7 +77,11 @@ mastodon = Mastodon(
 )
 
 media = mastodon.media_post(temp_file)
-status = f'Random Wikipedia Image: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
-mastodon.status_post(status=status, media_ids=[media], sensitive=True)
 
+if MANUAL_RUN:
+    status = f'Manually Triggered, most likely me testing the bot: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
+else:
+    status = f'Random Wikipedia Image: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
+
+mastodon.status_post(status=status, media_ids=[media], sensitive=True)
 print("posted:", status)
