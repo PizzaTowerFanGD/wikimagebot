@@ -38,15 +38,19 @@ while True:
 
 # Download the valid image
 image_url = imageinfo[0]['url']
-img_data = requests.get(image_url).content
-temp_file = "temp_image"
+file_extension = os.path.splitext(image_url)[1]  # Get the file extension from the URL
+if not file_extension:
+    file_extension = ".jpg"  # Default to .jpg if no extension is found
 
-# Save the image temporarily
-with open(temp_file, "wb") as f:
-    f.write(img_data)
-
-# Convert the image to JPEG if necessary
+temp_file = f"temp_image{file_extension}"
 try:
+    response = requests.get(image_url, stream=True)
+    response.raise_for_status()
+    with open(temp_file, "wb") as f:
+        for chunk in response.iter_content(1024):
+            f.write(chunk)
+
+    # Validate the downloaded file before processing
     with Image.open(temp_file) as img:
         original_format = img.format
         if original_format.upper() != "JPEG":
