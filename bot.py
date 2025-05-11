@@ -1,5 +1,6 @@
 import requests
 from mastodon import Mastodon
+from PIL import Image
 import os
 
 MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
@@ -25,7 +26,7 @@ while True:
     # Check if the imageinfo exists and the file type is valid
     if imageinfo:
         image_url = imageinfo[0]['url']
-        if image_url.lower().endswith(('.jpg', '.jpeg', '.png')):
+        if image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')):
             # Valid image type found, break the loop
             break
         else:
@@ -38,8 +39,28 @@ while True:
 # Download the valid image
 image_url = imageinfo[0]['url']
 img_data = requests.get(image_url).content
-with open("temp.jpg", "wb") as f:
+temp_file = "temp_image"
+
+# Save the image temporarily
+with open(temp_file, "wb") as f:
     f.write(img_data)
+
+# Convert the image to JPEG if necessary
+try:
+    with Image.open(temp_file) as img:
+        original_format = img.format
+        if original_format.upper() != "JPEG":
+            print(f"Converting {original_format} to JPEG...")
+            img = img.convert("RGB")  # Convert to RGB for JPEG compatibility
+            temp_file = "temp.jpg"
+            img.save(temp_file, "JPEG")
+        else:
+            # Rename to .jpg if it's already JPEG
+            os.rename(temp_file, "temp.jpg")
+            temp_file = "temp.jpg"
+except Exception as e:
+    print(f"Error processing image: {e}")
+    exit(1)
 
 # Post to Mastodon
 mastodon = Mastodon(
@@ -47,7 +68,7 @@ mastodon = Mastodon(
     api_base_url='https://mastodon.social'
 )
 
-media = mastodon.media_post("temp.jpg")
+media = mastodon.media_post(temp_file)
 status = f'Random Wikipedia Image: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
 mastodon.status_post(status=status, media_ids=[media], sensitive=True)
 
