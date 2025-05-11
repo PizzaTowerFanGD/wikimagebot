@@ -9,6 +9,10 @@ jobs:
   unzip-and-push:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write  # Allows push to the repository (needed for `git push`)
+      actions: write   # Needed to modify workflows
+
     steps:
       - name: checkout
         uses: actions/checkout@v3
