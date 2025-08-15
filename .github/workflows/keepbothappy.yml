@@ -1,0 +1,25 @@
+name: keep-actions-alive
+
+on:
+  schedule:
+    - cron: "*/5 * * * *" # every 5 minutes
+  workflow_dispatch: # optional manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - name: make empty commit
+        run: |
+          git config user.name "PizzaTowerFanGD"
+          git config user.email "sprusebenaustinalt@gmail.com"
+          git commit --allow-empty -m "keep workflows alive" || echo "no changes"
+
+      - name: push commit
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} HEAD:main
