@@ -15,7 +15,7 @@ jobs:
       - name: make empty commit
         run: |
           git config user.name "PizzaTowerFanGD"
-          git config user.email "sprusebenaustinalt@gmail.com"
+          git config user.email "sprusebenaustin@outlook.com"
           git commit --allow-empty -m "keep workflows alive" || echo "no changes"
 
       - name: push commit
