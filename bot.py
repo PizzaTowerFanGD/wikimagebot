@@ -79,7 +79,7 @@ try:
     image = Image.open(temp_file)
     response = client.models.generate_content(
         model="gemini-flash-lite-latest",
-        contents=[image, "you are generating alt text for a mastodon bot that posts random wikipedia images. respond with only a single concise english sentence describing the image for accessibility. do not include quotes, punctuation beyond normal grammar, introductions, explanations, or formatting — output only the alt text itself."]
+        contents=[image, "you are generating alt text for a mastodon bot that posts random wikipedia images. respond with only up to 2 concise english sentences describing the image for accessibility. do not include quotes, punctuation beyond normal grammar, introductions, explanations, or formatting. however, if there is text, you must include a transcript, and an english translation if not in english. — output only the alt text itself."]
     )
     description = response.text.strip() or "no description available"
 except Exception as e:
