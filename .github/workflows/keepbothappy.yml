@@ -1,8 +1,7 @@
 name: keep-actions-alive
 
 on:
-  schedule:
-    - cron: "*/5 * * * *" # every 5 minutes
+   
   workflow_dispatch: # optional manual trigger
 
 jobs:

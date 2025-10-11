@@ -1,8 +1,7 @@
 name: run wiki bot
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'
+   
   workflow_dispatch:
 
 jobs:
@@ -29,4 +28,5 @@ jobs:
         env:
           MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
           MANUAL_RUN: ${{ env.MANUAL_RUN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python bot.py
