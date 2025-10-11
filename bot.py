@@ -2,6 +2,7 @@ import requests
 from mastodon import Mastodon
 from PIL import Image
 import os
+import re
 
 MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
@@ -20,7 +21,7 @@ while True:
                 "generator": "random",
                 "grnnamespace": 6,
                 "prop": "imageinfo",
-                "iiprop": "url|size",
+                "iiprop": "url|size|extmetadata",  # include extmetadata for description
                 "format": "json"
             },
             headers=HEADERS
@@ -34,7 +35,12 @@ while True:
 
         if imageinfo:
             imageinfo = sorted(imageinfo, key=lambda x: x['width'], reverse=True)
-            image_url = imageinfo[0]['url']
+            info = imageinfo[0]
+            image_url = info['url']
+            metadata = info.get('extmetadata', {})
+            description = metadata.get('ImageDescription', {}).get('value', '')
+            description = re.sub(r'<[^>]+>', '', description).strip() or "no description available"
+
             if image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')):
                 break
             else:
@@ -76,10 +82,10 @@ mastodon = Mastodon(
     api_base_url='https://mastodon.social'
 )
 
-media = mastodon.media_post(temp_file)
+media = mastodon.media_post(temp_file, description=description)
 
 if MANUAL_RUN:
-    status = f'Manually Triggered, most likely me testing the bot: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
+    status = f'Manually Triggered: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
 else:
     status = f'Random Wikipedia Image: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
 
