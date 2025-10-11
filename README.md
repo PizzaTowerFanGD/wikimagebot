@@ -13,7 +13,7 @@ Posts random images from Wikipedia to Mastodon.
    pip install -r requirements.txt
    ```
 3. **Configure Mastodon Access Token:**
-   This bot posts images to Mastodon and requires an access token.
+   This bot posts images to Mastodon and requires an access token. (It also requires a Gemini token named GEMINI_API_TOKEN which I'm not telling you how to set up)
    - Navigate to your Mastodon instance's preferences, then go to 'Development'.
    - Create a new application. Name it something like 'WikiImageBot'.
    - Ensure the application has 'write:media' and 'write:statuses' permissions.
