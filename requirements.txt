@@ -1,3 +1,4 @@
 requests
 Mastodon.py
 Pillow
+google-genai
