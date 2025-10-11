@@ -1,8 +1,7 @@
 name: run wiki bot
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'
+   
   workflow_dispatch:
 
 jobs:
