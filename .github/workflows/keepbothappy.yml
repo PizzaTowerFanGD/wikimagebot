@@ -1,8 +1,9 @@
 name: keep-actions-alive
 
 on:
-   
-  workflow_dispatch: # optional manual trigger
+   schedule:
+    - cron: '*/5 * * * *'
+   workflow_dispatch: # optional manual trigger
 
 jobs:
   ping:
