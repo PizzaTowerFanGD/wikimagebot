@@ -26,14 +26,14 @@ jobs:
 
       - name: make change
         run: |
-          echo "$(date)" >> timestamp.txt
+          echo "Hi! Looks like you found my file! Good job!" >> .wikilingsfile
 
       - name: commit and push as app bot
         env:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
         run: |
-          git config user.name "my-app[bot]"
-          git config user.email "12345+my-app[bot]@users.noreply.github.com"
+          git config user.name "Wikiling[bot]"
+          git config user.email "2105393+wikiling[bot]@users.noreply.github.com"
           git add -A
           git commit -m "update timestamp" || echo "no changes"
           git push origin HEAD:main
