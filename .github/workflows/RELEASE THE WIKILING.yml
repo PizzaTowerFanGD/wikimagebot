@@ -1,0 +1,39 @@
+name: commit as app bot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # required for push
+      id-token: write  # required by tibdex action
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false  # avoid default GITHUB_TOKEN auth
+
+      - name: get github app installation token
+        id: app_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: make change
+        run: |
+          echo "$(date)" >> timestamp.txt
+
+      - name: commit and push as app bot
+        env:
+          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
+        run: |
+          git config user.name "my-app[bot]"
+          git config user.email "12345+my-app[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "update timestamp" || echo "no changes"
+          git push origin HEAD:main
