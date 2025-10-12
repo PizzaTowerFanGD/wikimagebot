@@ -29,9 +29,9 @@ jobs:
           echo "Hi! Looks like you found my file! Good job!" >> .wikilingsfile
 
       - name: commit and push as app bot
-          env:
+        env:
             GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
-          run: |
+        run: |
             git config user.name "my-app[bot]"
             git config user.email "12345+my-app[bot]@users.noreply.github.com"
             git add -A
