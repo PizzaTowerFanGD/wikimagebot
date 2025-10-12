@@ -29,11 +29,12 @@ jobs:
           echo "Hi! Looks like you found my file! Good job!" >> .wikilingsfile
 
       - name: commit and push as app bot
-        env:
-          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
-        run: |
-          git config user.name "Wikiling[bot]"
-          git config user.email "2105393+wikiling[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "update timestamp" || echo "no changes"
-          git push origin HEAD:main
+          env:
+            GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
+          run: |
+            git config user.name "my-app[bot]"
+            git config user.email "12345+my-app[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "update timestamp" || echo "no changes"
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+            git push origin HEAD:main
