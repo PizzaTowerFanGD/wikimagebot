@@ -79,12 +79,12 @@ try:
     image = Image.open(temp_file)
     response = client.models.generate_content(
         model="gemini-flash-lite-latest",
-        contents=[image, "you are generating alt text for a mastodon bot that posts random wikipedia images. respond with only up to 2 concise english sentences describing the image for accessibility. do not include quotes, punctuation beyond normal grammar, introductions, explanations, or formatting. however, if there is text, you must include a transcript, and an english translation if not in english. — output only the alt text itself."]
+        contents=[image, f"you are generating alt text for a mastodon bot that posts random wikipedia images. respond with only up to 2 concise english sentences describing the image for accessibility. do not include quotes, punctuation beyond normal grammar, introductions, explanations, or formatting. however, if there is text, you must include a transcript, and an english translation if not in english. — output only the alt text itself. the image itself has a file name of {title}, for context."]
     )
-    description = response.text.strip() or "no description available"
+    description = response.text.strip() or "no description available, its blank"
 except Exception as e:
     print(f"gemini alt generation failed: {e}")
-    description = "no description available"
+    description = f"no description available, error: {e}"
 
 # post to mastodon
 mastodon = Mastodon(
