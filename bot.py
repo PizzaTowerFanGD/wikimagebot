@@ -7,10 +7,11 @@ import time
 
 MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
+bypassratelimit = 1
 
 HEADERS = {
-    "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot)",
-    "Authorization": f"Bearer {os.getenv('MEDIAWIKI_TOKEN')}"
+    "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot)"
+    # "Authorization": f"Bearer {os.getenv('MEDIAWIKI_TOKEN')}"
 }
 
 client = genai.Client()
@@ -45,12 +46,15 @@ while True:
             if image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')):
                 break
             else:
-                print(f"invalid file type: {image_url}. retrying...")
+                print(f"invalid file type: {image_url}. retrying after {bypassratelimit} seconds...") # do it 
+                time.sleep(bypassratelimit) # this is for in case ratelimits happen (im looking at you wikipedia)
+                bypassratelimit = bypassratelimit * 1.1 # exponential, just like wikipedia wanted 
+                
         else:
             print("no image info found. retrying...")
     except Exception as e:
         print(f"error fetching image: {e}. retrying...")
-time.sleep(10) # attempt to wait out the rate limit (maybe im TOO FEST...)
+
 # download the image
 file_extension = os.path.splitext(image_url)[1] or ".jpg"
 temp_file = f"temp_image{file_extension}"
