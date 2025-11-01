@@ -9,7 +9,8 @@ MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
 
 HEADERS = {
-    "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot)"
+    "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot)",
+    "Authorization": f"Bearer {os.getenv('MEDIAWIKI_TOKEN')}"
 }
 
 client = genai.Client()
