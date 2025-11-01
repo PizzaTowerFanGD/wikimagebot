@@ -1,34 +1,40 @@
 name: run wiki bot
 
 on:
-   schedule:
+  schedule:
     - cron: '*/30 * * * *'
-   workflow_dispatch:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: setup python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Install deps
+      - name: install deps
         run: pip install -r requirements.txt
-      - name: Detect trigger source
+      - name: detect trigger source
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Triggered manually"
+            echo "triggered manually"
             echo "MANUAL_RUN=true" >> $GITHUB_ENV
           else
-            echo "Triggered on schedule"
+            echo "triggered on schedule"
             echo "MANUAL_RUN=false" >> $GITHUB_ENV
           fi
-      - name: Run bot
+      - name: run bot
+        shell: bash
         env:
           MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
-          MEDIAWIKI_TOKEN: ${{ secrets.MEDIAWIKI_TOKEN}}
+          MEDIAWIKI_TOKEN: ${{ secrets.MEDIAWIKI_TOKEN }}
           MANUAL_RUN: ${{ env.MANUAL_RUN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python bot.py
+        run: |
+          file bot.py || { echo "bot.py missing" && exit 1; }
+          python -u bot.py
