@@ -28,6 +28,7 @@ jobs:
       - name: Run bot
         env:
           MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
+          MEDIAWIKI_TOKEN: ${{ secrets.MEDIAWIKI_TOKEN}}
           MANUAL_RUN: ${{ env.MANUAL_RUN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python bot.py
