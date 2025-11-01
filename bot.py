@@ -30,6 +30,7 @@ while True:
         )
         res.raise_for_status()
         data = res.json()
+        print(data)
 
         page = next(iter(data['query']['pages'].values()))
         title = page['title']
