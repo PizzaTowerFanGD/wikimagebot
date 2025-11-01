@@ -3,6 +3,7 @@ from mastodon import Mastodon
 from PIL import Image
 import os
 from google import genai
+import time 
 
 MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
@@ -48,7 +49,7 @@ while True:
             print("no image info found. retrying...")
     except Exception as e:
         print(f"error fetching image: {e}. retrying...")
-
+time.sleep(10) # attempt to wait out the rate limit (maybe im TOO FEST...)
 # download the image
 file_extension = os.path.splitext(image_url)[1] or ".jpg"
 temp_file = f"temp_image{file_extension}"
@@ -102,3 +103,4 @@ else:
 
 mastodon.status_post(status=status, media_ids=[media], sensitive=True)
 print("posted:", status)
+ 
