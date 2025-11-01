@@ -1,3 +1,5 @@
+print("booting up", flush=True) # so theres this weird bug where sometimes python doesnt output anything and just freezes. this is a test.
+
 import requests
 from mastodon import Mastodon
 from PIL import Image
