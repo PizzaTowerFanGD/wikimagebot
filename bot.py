@@ -173,7 +173,8 @@ try:
 finally:
     # Clean up the final temporary image file
     if os.path.exists(temp_file):
-        os.remove(temp_file)    with Image.open(temp_file) as img:
+        os.remove(temp_file)    
+    with Image.open(temp_file) as img:
         if img.format.upper() != "JPEG":
             print(f"converting {img.format} to jpeg...")
             img = img.convert("RGB")
