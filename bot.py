@@ -13,7 +13,7 @@ MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
 wiki_bypassratelimit = 1
 
 HEADERS = {
-    "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot)"
+    "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot, contact me: sprusebenaustinalt@gmail.com)"
 }
 
 client = genai.Client()
