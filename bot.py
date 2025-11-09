@@ -18,7 +18,7 @@ HEADERS = {
 }
 
 client = genai.Client()
-DEFAULT_WIKIBASE = "https://en.wikipedia.org"
+DEFAULT_WIKIBASE = "https://en.wikipedia.org/w/"
 DEFAULT_POST_FORMAT = "Random Wikipedia Image: \"{title}\""
 
 # --- NEW: Intermission Setup ---
@@ -71,7 +71,7 @@ while True:
     try:
         print(f"Fetching from: {WIKIBASE}") # Added print to show which URL is being used
         res = requests.get(
-            f"{WIKIBASE}/w/api.php",
+            f"{WIKIBASE}/api.php",
             params={
                 "action": "query",
                 "generator": "random",
