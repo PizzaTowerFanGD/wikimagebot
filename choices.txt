@@ -1,11 +1,11 @@
-https://balatrowiki.org
-https://cellua.miraheze.org
-https://balatromods.miraheze.org
+https://balatrowiki.org/w
+https://cellua.miraheze.org/w
+https://balatromods.miraheze.org/w
 https://deltarune.wiki
 https://undertale.wiki
 https://minecraft.wiki
-https://hyperrouge.miraheze.org
+https://hyperrouge.miraheze.org/w
 https://pizzatower.wiki
-https://mario.miraheze.org
-https://kirby.miraheze.org
+https://mario.miraheze.org/w
+https://kirby.miraheze.org/w
 https://ultrakill.wiki.gg
