@@ -17,12 +17,13 @@ HEADERS = {
 }
 
 client = genai.Client()
+WIKIBASE = "https://en.wikipedia.org"
 
 # --- Wikipedia Image Fetching Loop ---
 while True:
     try:
         res = requests.get(
-            "https://en.wikipedia.org/w/api.php",
+            f"{WIKIBASE}/w/api.php",
             params={
                 "action": "query",
                 "generator": "random",
