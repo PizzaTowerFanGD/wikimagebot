@@ -1,24 +1,24 @@
-print("booting up", flush=True) # so theres this weird bug where sometimes python doesnt output anything and just freezes. this is a test.
+print("booting up", flush=True)
 
 import requests
 from mastodon import Mastodon
 from PIL import Image
 import os
 from google import genai
+from google.genai import types
 import time
 
 MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
-# Initial backoff for Wikipedia API request
-wiki_bypassratelimit = 1
 
+wiki_bypassratelimit = 1
 HEADERS = {
     "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot, contact me: sprusebenaustinalt@gmail.com)"
 }
 
 client = genai.Client()
 
-# --- Wikipedia Image Fetching Loop with Backoff ---
+# --- Wikipedia Image Fetching Loop ---
 while True:
     try:
         res = requests.get(
@@ -35,53 +35,45 @@ while True:
         )
         res.raise_for_status()
         data = res.json()
-        print(data)
 
         page = next(iter(data['query']['pages'].values()))
         title = page['title']
         imageinfo = page.get('imageinfo', [])
 
         if imageinfo:
-            # Sort by size, take the largest (or just the first valid one)
             imageinfo = sorted(imageinfo, key=lambda x: x.get('width', 0), reverse=True)
             info = imageinfo[0]
             image_url = info['url']
 
-            # Check file extension explicitly, although we check format later
             if image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')):
                 print(f"Found image URL: {image_url}")
-                # Reset backoff for the next API call if successful
                 wiki_bypassratelimit = 1
                 break
             else:
-                print(f"Invalid file type from URL ending: {image_url}. Retrying after {wiki_bypassratelimit} seconds...")
+                print(f"Invalid file type: {image_url}. Retrying in {wiki_bypassratelimit}s...")
                 time.sleep(wiki_bypassratelimit)
-                wiki_bypassratelimit = wiki_bypassratelimit * 1.5  # Exponential backoff for Wikipedia
-
+                wiki_bypassratelimit *= 1.5
         else:
             print("No image info found. Retrying...")
             time.sleep(wiki_bypassratelimit)
-            wiki_bypassratelimit = wiki_bypassratelimit * 1.5
+            wiki_bypassratelimit *= 1.5
 
     except requests.exceptions.HTTPError as e:
-        # Use res variable safely only if defined
         status_code = getattr(res, "status_code", None)
         if status_code == 429:
-            print(f"Wikipedia Rate Limited (429). Backing off for {wiki_bypassratelimit} seconds...")
+            print(f"Rate Limited (429). Backing off {wiki_bypassratelimit}s...")
             time.sleep(wiki_bypassratelimit)
-            wiki_bypassratelimit = wiki_bypassratelimit * 2  # Increase backoff significantly for rate limits
+            wiki_bypassratelimit *= 2
         else:
-            print(f"HTTP error fetching image: {e}. Retrying...")
+            print(f"HTTP error: {e}. Retrying...")
             time.sleep(wiki_bypassratelimit)
-            wiki_bypassratelimit = wiki_bypassratelimit * 1.5
-
+            wiki_bypassratelimit *= 1.5
     except Exception as e:
         print(f"Error fetching image: {e}. Retrying...")
         time.sleep(wiki_bypassratelimit)
-        wiki_bypassratelimit = wiki_bypassratelimit * 1.5
+        wiki_bypassratelimit *= 1.5
 
-
-# --- Image Downloading and Processing with Backoff ---
+# --- Image Download ---
 file_extension = os.path.splitext(image_url)[1] or ".jpg"
 temp_file = f"temp_image{file_extension}"
 download_success = False
@@ -89,82 +81,90 @@ download_bypassratelimit = 1
 
 while not download_success:
     try:
-        print(f"Attempting to download image from: {image_url}")
+        print(f"Downloading image: {image_url}")
         response = requests.get(image_url, stream=True, headers=HEADERS)
         response.raise_for_status()
-
         with open(temp_file, "wb") as f:
             for chunk in response.iter_content(1024):
-                if not chunk:
-                    continue
-                f.write(chunk)
-
+                if chunk:
+                    f.write(chunk)
         print("Image downloaded successfully.")
         download_success = True
-        # Reset download backoff if successful
         download_bypassratelimit = 1
-
     except requests.exceptions.HTTPError as e:
         status_code = getattr(response, "status_code", None)
         if status_code == 429:
-            print(f"Server returned 429 Rate Limit while downloading. Backing off for {download_bypassratelimit} seconds...")
+            print(f"429 Rate Limit. Backing off {download_bypassratelimit}s...")
             time.sleep(download_bypassratelimit)
-            download_bypassratelimit = download_bypassratelimit * 2
+            download_bypassratelimit *= 2
         else:
             print(f"HTTP error downloading image ({status_code}): {e}. Retrying...")
             time.sleep(download_bypassratelimit)
-            download_bypassratelimit = download_bypassratelimit * 1.5
-
+            download_bypassratelimit *= 1.5
     except Exception as e:
-        print(f"Error during initial download: {e}. Retrying...")
+        print(f"Download error: {e}. Retrying...")
         time.sleep(download_bypassratelimit)
-        download_bypassratelimit = download_bypassratelimit * 1.5
-
-    # Safety break for download loop to prevent infinite loops if the URL is permanently bad
-    if download_bypassratelimit > 300:  # Stop trying after 5 minutes of backoff (arbitrary limit)
+        download_bypassratelimit *= 1.5
+    if download_bypassratelimit > 300:
         print("Max download retries reached. Exiting.")
         exit(1)
 
-
-# --- Image Format Conversion ---
+# --- Image Conversion ---
 try:
     with Image.open(temp_file) as img:
         output_filename = "temp.jpg"
         if img.format and img.format.upper() != "JPEG":
-            print(f"Converting {img.format} to jpeg...")
+            print(f"Converting {img.format} to JPEG...")
             img = img.convert("RGB")
             img.save(output_filename, "JPEG")
         else:
-            # If it was already a compatible format (or we couldn't determine format clearly)
             os.replace(temp_file, output_filename)
-
         temp_file = output_filename
-
 except Exception as e:
-    print(f"Error processing or converting image: {e}")
-    # Clean up potentially partially downloaded file if conversion fails
+    print(f"Image processing error: {e}")
     if os.path.exists(temp_file):
         os.remove(temp_file)
     exit(1)
-
 
 # --- Gemini Alt Text Generation ---
 try:
     with open(temp_file, "rb") as f:
         image = Image.open(f)
-        # Note: depending on the genai SDK version, you may need to pass bytes or a different object.
-        # Keep this call as-is and adapt if your SDK expects a different payload.
         response = client.models.generate_content(
             model="gemini-flash-lite-latest",
             contents=[image, "You are generating alt text for a mastodon bot that posts random Wikipedia images. Respond with only up to 2 concise English sentences describing the image for accessibility."]
         )
-    # Some SDK responses provide .text or .output; guard both
     description = getattr(response, "text", None) or getattr(response, "output", None) or ""
-    description = description.strip() or "no description available, it's blank"
+    description = description.strip() or "no description available"
 except Exception as e:
     print(f"Gemini alt generation failed: {e}")
     description = f"no description available, error: {e}"
 
+# --- Context Generation with Search Grounding ---
+try:
+    grounding_tool = types.Tool(
+        google_search=types.GoogleSearch()
+    )
+    config = types.GenerateContentConfig(
+        tools=[grounding_tool]
+    )
+
+    context_prompt = f"""
+Alt text: {description}
+Title: {title}
+Provide 1-2 concise sentences giving extra context or background about this image, using verifiable information.
+Respond in clear English.
+"""
+    context_response = client.models.generate_content(
+        model="gemini-flash-lite-latest",
+        contents=context_prompt,
+        config=config
+    )
+    context_text = getattr(context_response, "text", None) or getattr(context_response, "output", None) or ""
+    context_text = context_text.strip() or "no context available"
+except Exception as e:
+    print(f"Context generation failed: {e}")
+    context_text = "no context available"
 
 # --- Posting to Mastodon ---
 try:
@@ -172,8 +172,6 @@ try:
         access_token=MASTODON_TOKEN,
         api_base_url='https://mastodon.social'
     )
-
-    # mastodon.media_post returns a dict; extract id if so
     media_obj = mastodon.media_post(temp_file, description=description)
     media_id = media_obj.get("id") if isinstance(media_obj, dict) else media_obj
 
@@ -182,11 +180,16 @@ try:
     else:
         status = f'Random Wikipedia Image: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
 
-    # Set sensitive=True for random content
     mastodon.status_post(status=status, media_ids=[media_id], sensitive=True)
     print("posted:", status)
 
+    # --- Always Post Context Reply ---
+    mastodon.status_post(
+        status=context_text,
+        in_reply_to_id=media_id
+    )
+    print("posted context reply:", context_text)
+
 finally:
-    # Clean up the final temporary image file
     if os.path.exists(temp_file):
         os.remove(temp_file)
