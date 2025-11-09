@@ -13,7 +13,7 @@ MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
 
 wiki_bypassratelimit = 1
 HEADERS = {
-    "User-Agent": "wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot, contact me: sprusebenaustinalt@gmail.com)"
+    "User-Agent": f"wikimagebot.mastodon.social/1.0 (https://github.com/PizzaTowerFanGD/wikimagebot, contact me: sprusebenaustinalt@gmail.com, testing: {os.getenv('MANUAL_RUN')}"
 }
 
 client = genai.Client()
@@ -180,13 +180,13 @@ try:
     else:
         status = f'Random Wikipedia Image: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
 
-    mastodon.status_post(status=status, media_ids=[media_id], sensitive=True)
+    main_status = mastodon.status_post(status=status, media_ids=[media_id], sensitive=True)
     print("posted:", status)
 
     # --- Always Post Context Reply ---
     mastodon.status_post(
         status=context_text,
-        in_reply_to_id=media_id
+        in_reply_to_id=main_status["id"]
     )
     print("posted context reply:", context_text)
 
