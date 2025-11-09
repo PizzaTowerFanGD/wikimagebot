@@ -7,6 +7,7 @@ import os
 from google import genai
 from google.genai import types
 import time
+from datetime import datetime, timezone
 
 MASTODON_TOKEN = os.getenv('MASTODON_TOKEN')
 MANUAL_RUN = os.getenv('MANUAL_RUN', 'false').lower() == 'true'
@@ -17,11 +18,58 @@ HEADERS = {
 }
 
 client = genai.Client()
-WIKIBASE = "https://en.wikipedia.org"
+DEFAULT_WIKIBASE = "https://en.wikipedia.org"
+DEFAULT_POST_FORMAT = "Random Wikipedia Image: \"{title}\""
+
+# --- NEW: Intermission Setup ---
+CHOICES_FILE = "choices.txt"
+START_HOUR = 16  # 4 PM
+END_HOUR = 18    # 6 PM
+DATE_SINCE = datetime(2010, 6, 6, tzinfo=timezone.utc)
+
+WIKIBASE = DEFAULT_WIKIBASE
+POST_FORMAT_STRING = DEFAULT_POST_FORMAT
+
+# --- NEW: Conditional Logic for Time and Date ---
+now_utc = datetime.now(timezone.utc)
+
+# 1. Check if it's within the 4 PM to 6 PM window (assuming UTC check for simplicity/consistency)
+is_intermission_time = START_HOUR <= now_utc.hour < END_HOUR
+
+if is_intermission_time:
+    print(f"*** INTERMISSION ACTIVE ({START_HOUR}:00 to {END_HOUR}:00 UTC) ***")
+    
+    # 2. Calculate days since 6/6/2010
+    days_since_date = (now_utc - DATE_SINCE).days
+    print(f"Days since {DATE_SINCE.date()}: {days_since_date}")
+
+    # 3. Load choices from file
+    try:
+        with open(CHOICES_FILE, 'r') as f:
+            choices = [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        print(f"ERROR: Choices file '{CHOICES_FILE}' not found. Sticking to default.")
+        choices = [DEFAULT_WIKIBASE]
+    
+    if not choices:
+        print(f"ERROR: Choices file '{CHOICES_FILE}' is empty. Sticking to default.")
+        choices = [DEFAULT_WIKIBASE]
+
+    # 4. Randomly select based on day count
+    choice_index = days_since_date % len(choices)
+    WIKIBASE = choices[choice_index]
+    POST_FORMAT_STRING = "INTERMISSION FROM {wikiurl}: \"{title}\""
+    
+    print(f"Selected WikiBase: {WIKIBASE}")
+
+else:
+    print(f"Outside intermission hours. Using default WikiBase: {WIKIBASE}")
+
 
 # --- Wikipedia Image Fetching Loop ---
 while True:
     try:
+        print(f"Fetching from: {WIKIBASE}") # Added print to show which URL is being used
         res = requests.get(
             f"{WIKIBASE}/w/api.php",
             params={
@@ -37,21 +85,29 @@ while True:
         res.raise_for_status()
         data = res.json()
 
-        page = next(iter(data['query']['pages'].values()))
-        title = page['title']
+        # Safely get the first page value
+        pages = data.get('query', {}).get('pages', {})
+        if not pages:
+            print("API response contains no pages. Retrying...")
+            time.sleep(wiki_bypassratelimit)
+            wiki_bypassratelimit *= 1.5
+            continue
+            
+        page = next(iter(pages.values()))
+        title = page.get('title', 'Unknown Title')
         imageinfo = page.get('imageinfo', [])
 
         if imageinfo:
             imageinfo = sorted(imageinfo, key=lambda x: x.get('width', 0), reverse=True)
             info = imageinfo[0]
-            image_url = info['url']
+            image_url = info.get('url')
 
-            if image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')):
+            if image_url and image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')):
                 print(f"Found image URL: {image_url}")
                 wiki_bypassratelimit = 1
                 break
             else:
-                print(f"Invalid file type: {image_url}. Retrying in {wiki_bypassratelimit}s...")
+                print(f"Invalid file type or no URL found: {image_url}. Retrying in {wiki_bypassratelimit}s...")
                 time.sleep(wiki_bypassratelimit)
                 wiki_bypassratelimit *= 1.5
         else:
@@ -179,7 +235,15 @@ try:
     if MANUAL_RUN:
         status = f'Manually Triggered: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
     else:
-        status = f'Random Wikipedia Image: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
+        # --- NEW: Use the dynamically set POST_FORMAT_STRING ---
+        status = POST_FORMAT_STRING.format(
+            wikiurl=WIKIBASE, 
+            title=title, 
+            image_url=image_url
+        )
+        if not status.startswith("INTERMISSION"): # Ensure image_url is appended if it wasn't in the format string
+             status += f'\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
+
 
     main_status = mastodon.status_post(status=status, media_ids=[media_id], sensitive=True)
     print("posted:", status)
