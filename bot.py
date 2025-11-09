@@ -233,7 +233,7 @@ try:
     media_id = media_obj.get("id") if isinstance(media_obj, dict) else media_obj
 
     if MANUAL_RUN:
-        status = f'Manually Triggered: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
+        status = f'Manually Triggered, using {WIKIBASE}: "{title}"\n{image_url} (BOT POST, MAY CONTAIN BAD CONTENT)'
     else:
         # --- NEW: Use the dynamically set POST_FORMAT_STRING ---
         status = POST_FORMAT_STRING.format(
